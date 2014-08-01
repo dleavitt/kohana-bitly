@@ -18,7 +18,7 @@ class Kohana_Bitly {
 		{
 			if ($config === NULL)
 			{
-				$config = Kohana::config('bitly')->$name;
+				$config = Kohana::$config->load('bitly')[$name];
 			}
 			
 			new Bitly($name, $config);
