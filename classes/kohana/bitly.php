@@ -51,7 +51,7 @@ class Kohana_Bitly {
 		}
 		catch (Exception $e)
 		{
-			Kohana::$log->add(Kohana::ERROR, "Bit.ly error: {$e->getMessage()} ($long_url)");
+			Kohana::$log->add(Log::ERROR, "Bit.ly error: {$e->getMessage()} ($long_url)");
 		}
 		return $long_url;
 	}
@@ -63,7 +63,7 @@ class Kohana_Bitly {
 			'apiKey' => $this->_config['api_key'],
 		), $params);
 		
-		$response = json_decode(file_get_contents(self::$base_url.$method.'?'.http_build_query($params)), TRUE);
+		$response = json_decode($this->file_get_contents_curl(self::$base_url.$method.'?'.http_build_query($params)));
 		
 		if (Arr::get($response, 'status_code') == 200)
 		{
@@ -73,6 +73,25 @@ class Kohana_Bitly {
 		{
 			throw new Bitly_Exception(Arr::get($response, 'status_txt'));
 		}
+	}
+
+	function file_get_contents_curl($url) {
+	    $ch = curl_init();
+
+	    curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
+	    curl_setopt($ch, CURLOPT_HEADER, 0);
+	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	    curl_setopt($ch, CURLOPT_URL, $url);
+	    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);       
+
+	    $data = array(
+	    	'data' => curl_exec($ch),
+	    	'status_code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
+	    	'status_txt' => curl_getinfo($ch, 'HTTP ERROR: ' . CURLINFO_HTTP_CODE)
+	    );
+	    curl_close($ch);
+
+	    return $data;
 	}
 	
 }
